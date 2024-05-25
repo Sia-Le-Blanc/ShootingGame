@@ -39,8 +39,7 @@ class Player(pygame.sprite.Sprite):
         self.bullets = pygame.sprite.Group()            # 플레이어 비행기가 발사한 탄환의 그룹
         self.img_index = 0                              # 플레이어 스프라이트 이미지 인덱스
         self.is_hit = False                             # 플레이어가 맞았는지 여부
-        self.shift_pressed = False
-
+ 
     def shoot(self, bullet_img):
         bullet = Bullet(bullet_img, self.rect.midtop)
         self.bullets.add(bullet)
@@ -69,19 +68,6 @@ class Player(pygame.sprite.Sprite):
         else:
             self.rect.left += self.speed
             
-    def update(self): #쉬프트 키를 누르면 이동 속도 증가
-        if self.shift_pressed:
-            self.speed = 12
-        else:
-            self.speed = 8
-            
-    def handle_events(self, event):
-        if event.type == KEYDOWN:
-            if event.key == K_LSHIFT:
-                self.shift_pressed = True
-        elif event.type == KEYUP:
-            if event.key == K_LSHIFT:
-                self.shift_pressed = False
 # 적 클래스
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, enemy_img, enemy_down_imgs, init_pos):
