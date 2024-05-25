@@ -171,6 +171,13 @@ while running:
     key_pressed = pygame.key.get_pressed()
     # 플레이어가 맞았을 경우 무효화
     if not player.is_hit:
+        # 쉬프트 키가 눌렸을 때 이동 속도 증가
+        if key_pressed[K_LSHIFT] or key_pressed[K_RSHIFT]:
+            player.speed = 12  # 예시로 이동 속도를 12로 증가시킵니다. 필요에 따라 조절 가능합니다.
+        else:
+            player.speed = 8   # 쉬프트 키를 뗐을 때 이동 속도를 다시 기본값으로 설정합니다.
+
+    
         if key_pressed[K_w] or key_pressed[K_UP]:
             player.moveUp()
         if key_pressed[K_s] or key_pressed[K_DOWN]:

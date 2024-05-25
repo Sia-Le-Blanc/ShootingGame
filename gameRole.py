@@ -39,6 +39,8 @@ class Player(pygame.sprite.Sprite):
         self.bullets = pygame.sprite.Group()            # 플레이어 비행기가 발사한 탄환의 그룹
         self.img_index = 0                              # 플레이어 스프라이트 이미지 인덱스
         self.is_hit = False                             # 플레이어가 맞았는지 여부
+        self.shift_pressed = False                      # 쉬프트 키가 눌려 있는지 여부
+
  
     def shoot(self, bullet_img):
         bullet = Bullet(bullet_img, self.rect.midtop)
@@ -48,26 +50,46 @@ class Player(pygame.sprite.Sprite):
         if self.rect.top <= 0:
             self.rect.top = 0
         else:
-            self.rect.top -= self.speed
+            if self.shift_pressed:
+                self.rect.top -= self.speed * 2  # 쉬프트 키를 누르면 이동 속도가 2배로 증가
+            else:
+                self.rect.top -= self.speed
 
     def moveDown(self):
         if self.rect.top >= SCREEN_HEIGHT - self.rect.height:
             self.rect.top = SCREEN_HEIGHT - self.rect.height
         else:
-            self.rect.top += self.speed
+            if self.shift_pressed:
+                self.rect.top += self.speed * 2  # 쉬프트 키를 누르면 이동 속도가 2배로 증가
+            else:
+                self.rect.top += self.speed
 
     def moveLeft(self):
         if self.rect.left <= 0:
             self.rect.left = 0
         else:
-            self.rect.left -= self.speed
+            if self.shift_pressed:
+                self.rect.left -= self.speed * 2  # 쉬프트 키를 누르면 이동 속도가 2배로 증가
+            else:
+                self.rect.left -= self.speed
 
     def moveRight(self):
         if self.rect.left >= SCREEN_WIDTH - self.rect.width:
             self.rect.left = SCREEN_WIDTH - self.rect.width
         else:
-            self.rect.left += self.speed
-            
+            if self.shift_pressed:
+                self.rect.left += self.speed * 2  # 쉬프트 키를 누르면 이동 속도가 2배로 증가
+            else:
+                self.rect.left += self.speed
+                
+    def handle_events(self, event):
+        if event.type == KEYDOWN:
+            if event.key == K_LSHIFT:
+                self.shift_pressed = True
+        elif event.type == KEYUP:
+            if event.key == K_LSHIFT:
+                self.shift_pressed = False
+                
 # 적 클래스
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, enemy_img, enemy_down_imgs, init_pos):
