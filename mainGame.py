@@ -17,6 +17,7 @@ pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('지구를 지켜라!')
 
+
 # 게임 음악 로드
 bullet_sound = pygame.mixer.Sound('resources/sound/bullet.wav')
 enemy1_down_sound = pygame.mixer.Sound('resources/sound/enemy1_down.wav')
@@ -30,7 +31,26 @@ pygame.mixer.music.set_volume(0.25)
 
 # 배경 이미지 로드
 background = pygame.image.load('resources/image/background.png').convert()
-game_over = pygame.image.load('resources/image/gameover.png')
+
+# 게임 오버 이미지 로드
+game_over_image = pygame.image.load('resources/image/gameover.png')
+
+# 재시작 버튼 이미지 로드
+restart_button_image = pygame.image.load('resources/image/restart_button.png')
+restart_button_rect = restart_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50))
+restart_button_rect.center = (250, 150)  # 버튼 위치 조정
+restart_button_rect.width = 200
+restart_button_rect.height = 100
+
+# 종료 버튼 이미지 로드
+exit_button_image = pygame.image.load('resources/image/exit_button.png')
+exit_button_rect = exit_button_image.get_rect(center=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 50))
+exit_button_rect.center = (270, 550)  # 버튼 위치 조정
+exit_button_rect.width = 200
+exit_button_rect.height = 100
+
+# 게임 오버 상태를 나타내는 변수 추가
+is_game_over = False
 
 filename = 'resources/image/shoot.png'
 plane_img = pygame.image.load(filename)
@@ -73,12 +93,58 @@ score = 0
 
 clock = pygame.time.Clock()
 
+# 게임 오버 화면 함수 정의
+def show_game_over():
+    screen.blit(game_over_image, (0, 0))
+    screen.blit(restart_button_image, restart_button_rect)
+    screen.blit(exit_button_image, exit_button_rect)
+
+    # 점수 표시
+    font = pygame.font.Font(None, 48)
+    text = font.render('Score: ' + str(score), True, (255, 0, 0))
+    text_rect = text.get_rect()
+    text_rect.centerx = screen.get_rect().centerx
+    text_rect.centery = screen.get_rect().centery + 24
+    screen.blit(text, text_rect)
+
+    pygame.display.update()
+
+def reset_game():
+    global is_game_over, player, player_down_index, score, enemies1, running
+    is_game_over = False
+    player.is_hit = False
+    player_down_index = 16
+    score = 0
+    enemies1.empty()
+    player.bullets.empty()
+    running = True
+
 running = True
 
 while running:
-    # 게임의 최대 프레임 속도를 60으로 제어
+    # 게임의 최대 프레임 속도를 45으로 제어
     clock.tick(45)
 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN and is_game_over:
+            mouse_pos = pygame.mouse.get_pos()
+            print(f"Mouse Clicked at: {mouse_pos}")  # 클릭 위치 출력
+            if restart_button_rect.collidepoint(mouse_pos):
+                print("Restart button clicked")  # 디버깅 메시지
+                reset_game()  # 게임 재시작
+            elif exit_button_rect.collidepoint(mouse_pos):
+                print("Exit button clicked")  # 디버깅 메시지
+                pygame.quit()
+                exit()
+
+    if is_game_over:
+        show_game_over()
+        continue  # 게임 오버 상태에서는 아래 코드를 실행하지 않음
+            
+            
     # 총알 발사 빈도 제어 및 발사
     if not player.is_hit:
         if shoot_frequency % 15 == 0:
@@ -135,7 +201,7 @@ while running:
         screen.blit(player.image[player.img_index], player.rect)
         player_down_index += 1
         if player_down_index > 47:
-            running = False
+            is_game_over = True
 
     # 격추 애니메이션 그리기
     for enemy_down in enemies_down:
@@ -162,10 +228,10 @@ while running:
     # 화면 업데이트
     pygame.display.update()
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
+    #for event in pygame.event.get():
+     #   if event.type == pygame.QUIT:
+      #      pygame.quit()
+       #     exit()
             
     # 키보드 이벤트 감지
     key_pressed = pygame.key.get_pressed()
@@ -187,14 +253,51 @@ while running:
         if key_pressed[K_d] or key_pressed[K_RIGHT]:
             player.moveRight()
 
+# 게임 오버 상태에서 마우스 클릭 이벤트를 계속 처리하기 위해 루프 추가
+while is_game_over:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # 마우스 클릭 이벤트 처리
+            mouse_pos = pygame.mouse.get_pos()
+            print(f"Mouse Clicked at: {mouse_pos}")  # 클릭 위치 출력
+            if restart_button_rect.collidepoint(mouse_pos):
+                print("Restart button clicked")  # 디버깅 메시지
+                reset_game()  # 게임 재시작
+            elif exit_button_rect.collidepoint(mouse_pos):
+                print("Exit button clicked")  # 디버깅 메시지
+                pygame.quit()
+                exit()
+
+    # 배경 화면 그리기
+    screen.fill((255, 255, 255))
+    screen.blit(game_over_image, (0, 0))
+    screen.blit(restart_button_image, restart_button_rect)
+    screen.blit(exit_button_image, exit_button_rect)
+
+    # 점수 표시
+    font = pygame.font.Font(None, 48)
+    text = font.render('Score: ' + str(score), True, (255, 0, 0))
+    text_rect = text.get_rect()
+    text_rect.centerx = screen.get_rect().centerx
+    text_rect.centery = screen.get_rect().centery + 24
+    screen.blit(text, text_rect)
+
+    pygame.display.update()
 
 font = pygame.font.Font(None, 48)
 text = font.render('Score: '+ str(score), True, (255, 0, 0))
 text_rect = text.get_rect()
 text_rect.centerx = screen.get_rect().centerx
 text_rect.centery = screen.get_rect().centery + 24
-screen.blit(game_over, (0, 0))
+
+screen.blit(game_over_image, (0, 0))
+screen.blit(restart_button_image, restart_button_rect)
+screen.blit(exit_button_image, exit_button_rect)
 screen.blit(text, text_rect)
+pygame.display.update()
 
 while 1:
     for event in pygame.event.get():
